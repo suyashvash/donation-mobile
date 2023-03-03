@@ -8,11 +8,7 @@ const OnBoardingStack = createStackNavigator();
 
 export default function OnBoardingNavigator() {
   return (
-    <OnBoardingStack.Navigator
-    screenOptions={{
-      headerShown: false
-    }}
-     initialRouteName={Routes.onBoardingStack.welcomeScreen}>
+    <OnBoardingStack.Navigator screenOptions={{headerShown: false}} initialRouteName={Routes.onBoardingStack.welcomeScreen}>
       <OnBoardingStack.Screen name={Routes.onBoardingStack.welcomeScreen} component={WelcomeScreen} />
       <OnBoardingStack.Screen name={Routes.onBoardingStack.login} component={LoginScreen} />
       <OnBoardingStack.Screen name={Routes.onBoardingStack.register} component={RegisterScreen} />

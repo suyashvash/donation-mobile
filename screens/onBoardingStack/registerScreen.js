@@ -30,7 +30,7 @@ export default function RegisterScreen({navigation}) {
             state: '',
             pincode: '',
             country: '',
-            donations: [],
+            donations: JSON.stringify([]),
             createdAt: new Date().getTime(),
             updatedAt: new Date().getTime(),
         }

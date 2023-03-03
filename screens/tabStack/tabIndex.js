@@ -7,6 +7,10 @@ import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 import IonIcons from '@expo/vector-icons/Ionicons';
 import MaterialCommunity from '@expo/vector-icons/MaterialCommunityIcons';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
+import HomeNavigator from './homeStack/homeIndex';
+import AlertBoardNavigator from './alertStack/alertIndex';
+import HistoryNavigator from './historyStack/historyIndex';
+import ProfileNavigator from './profileStack/profileIndex';
 
 export const Screen = () => {
     return(
@@ -34,19 +38,19 @@ export default function TabStack() {
         tabBarActiveTintColor: Colors.primary,
         tabBarInactiveTintColor: '#A2A2A8'
       }} >
-      <MainTabStack.Screen name={Routes.tabStack.homeStack.tag} component={Screen}
+      <MainTabStack.Screen name={Routes.tabStack.homeStack.tag} component={HomeNavigator}
         options={({ navigation, route }) => ({
           ...tabProperties, headerTitle: 'Home',
           tabBarIcon: ({ color }) => <MaterialCommunity name={'home'} size={30} color={color} />
         })}
       />
-      <MainTabStack.Screen name={Routes.tabStack.alertStack.tag} component={Screen}
+      <MainTabStack.Screen name={Routes.tabStack.alertStack.tag} component={AlertBoardNavigator}
         options={({ navigation, route }) => ({
           ...tabProperties, headerTitle: 'Alert Board',
           tabBarIcon: ({ color }) => <MaterialCommunity name={'clipboard-alert'} size={25} color={color} />
         })}
       />
-      <MainTabStack.Screen name={Routes.tabStack.historyStack.tag} component={Screen}
+      <MainTabStack.Screen name={Routes.tabStack.historyStack.tag} component={HistoryNavigator}
         options={({ navigation, route }) => ({
           ...tabProperties, headerTitle: 'History',
           tabBarIcon: ({ color }) => 
@@ -55,7 +59,7 @@ export default function TabStack() {
         })}
       />
 
-      <MainTabStack.Screen name={Routes.tabStack.profileStack.tag} component={Screen}
+      <MainTabStack.Screen name={Routes.tabStack.profileStack.tag} component={ProfileNavigator}
         options={({ navigation, route }) => ({
           ...tabProperties, headerTitle: 'My Profile',
           tabBarIcon: ({ color }) => <MaterialIcons name={'person'} size={30} color={color} />

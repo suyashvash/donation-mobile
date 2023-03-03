@@ -30,6 +30,15 @@
     },
     "web": {
       "favicon": "./assets/favicon.png"
-    }
+    },
+    "plugins": [
+
+      [
+        "expo-location",
+        {
+          "locationPermission": "Donation needs your location permission to get your current location."
+        }
+      ]
+    ]
   }
 }

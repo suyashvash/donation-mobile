@@ -20,7 +20,8 @@ export const Routes = {
             tag: 'alertStack',
             alertBoard: 'Alert Board',
             campgainDetails: 'Campgain Details',
-            donateScreen: 'Donate Screen',
+            donateScreen: 'Donate',
+            volunteerScreen: 'Volunteer',
         },
         historyStack:{
             tag: 'historyStack',
