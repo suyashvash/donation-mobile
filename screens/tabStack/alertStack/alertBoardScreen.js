@@ -1,5 +1,5 @@
 import { LinearGradient } from "expo-linear-gradient";
-import React, { useEffect } from "react";
+import React, { useEffect,useState } from "react";
 import { View, Text, StyleSheet, Image, FlatList, Dimensions, TouchableOpacity, Linking, Platform, ActivityIndicator } from "react-native";
 import Header from "../../../components/header";
 import { Colors } from "../../../utils/colors";
@@ -8,7 +8,8 @@ import { getDistanceFromLatLonInKm } from "../../../configs/envConfig";
 import useStore, { SelectedLocation } from "../../../src/app/useStore";
 import { doc, getDoc ,getFirestore} from "firebase/firestore";
 import { Routes } from "../../../utils/routes";
-
+import MaterialIcons from '@expo/vector-icons/MaterialIcons'
+import { BottomSheet } from "../../../components/bottomSheet";
 
 export default function AlertBoardScreen({navigation,route}) {
 
@@ -16,6 +17,29 @@ export default function AlertBoardScreen({navigation,route}) {
     useEffect(() => {
         getListing()
     },[])
+
+    const bottomSheetRef = React.useRef(null);
+
+    const radiusList =[
+      {id:1,value:10},
+      {id:2,value:20},
+      {id:3,value:30},
+      {id:4,value:40},
+      {id:5,value:50},
+      {id:6,value:60},
+    ]
+  
+    const taglist =[
+      {id:1,value:"disaster",text:"Disaster"},
+      {id:2,value:"education",text:"Education"},
+      {id:3,value:"health",text:"Health"},
+      {id:4,value:'children',text:'Children'},
+      {id:5,value:'women',text:'Women'},
+      {id:6,value:'animals',text:'Animals'},
+    ]
+  
+    const [tags,setTags] = useState([])
+    const [radius,setRadius] = useState(10)
 
     const db = getDatabase();
     const firestore = getFirestore();
@@ -36,7 +60,6 @@ export default function AlertBoardScreen({navigation,route}) {
         if(snapshot.val()){
             const values = Object.values(snapshot.val())
             values.forEach(async(camp,index) => {
-                console.log(camp.ngoUID)
                 const ngoRef = doc(firestore, "ngo", `${camp.ngoUID}`);
                 const docSnap = await getDoc(ngoRef);
                 if (docSnap.exists()) {
@@ -45,21 +68,40 @@ export default function AlertBoardScreen({navigation,route}) {
             
                     let distance = getDistanceFromLatLonInKm(selectedLocation.latitude,selectedLocation.longitude,ngo.lat,ngo.long)
 
-                    if(distance <= 10){
-                        let tempData = camp
-                        tempData.ngo = ngo
-                        tempData.distance = Math.round(distance)
-                        listings.push(tempData)
+                    if(distance <= radius){
 
-                        const ordered=  listings.sort((a, b) => parseFloat(b.distance) < parseFloat(a.distance));
-                        setAlertList(ordered)
-                        setIsLoading(false)
+                        if(tags.length > 0){
+                            let temp = tags.filter((tag) => ngo.tag.includes(tag))
+                            if(temp.length > 0){
+                                let tempData = camp
+                                tempData.ngo = ngo
+                                tempData.distance = Math.round(distance)
+                                listings.push(tempData)
+
+                                const ordered=  listings.sort((a, b) => parseFloat(b.distance) < parseFloat(a.distance));
+                                setAlertList(ordered)
+                                setIsLoading(false)
+                            }else{
+                                setAlertList([])
+                                setIsLoading(false)
+                            }
+                        }else{
+                            let tempData = camp
+                            tempData.ngo = ngo
+                            tempData.distance = Math.round(distance)
+                            listings.push(tempData)
+    
+                            const ordered=  listings.sort((a, b) => parseFloat(b.distance) < parseFloat(a.distance));
+                            setAlertList(ordered)
+                            setIsLoading(false)
+                        }
+                        
+                      
 
                     }
                   } else {
                     setIsLoading(false)
                     // doc.data() will be undefined in this case
-                    console.log("No such document!");
                   }
 
                 
@@ -106,25 +148,90 @@ export default function AlertBoardScreen({navigation,route}) {
         )
     }
 
+    const openFilter = () => {
+        bottomSheetRef.current.open()
+      }
+    
+      const selectFilter = (value) => {
+        setRadius(value)
+        // bottomSheetRef.current.close()
+        // getNGOList(coordinates,undefined,value)
+      }
+    
+      const selectTag = (value) => {
+        let valueNew = value.toLowerCase()
+        let tempGen = [...tags];
+        if( tempGen.indexOf(valueNew) === -1){
+            tempGen.push(valueNew)
+            setTags(tempGen)
+        }else{
+            tempGen.splice(tempGen.indexOf(valueNew),1)
+            setTags(tempGen)
+        }
+    
+      }
+    
+      const applyFilter = () => {
+        bottomSheetRef.current.close()
+        getListing()
+      }
+
 
     return(
         <View style={styles.container}>
-            <Header title='Alert Board' subTitle='Latest,' />
+            <Header title='Alert Board' subTitle='Latest,'  headerRight={(
+                  <TouchableOpacity onPress={openFilter}>
+                    <MaterialIcons name="filter-list" size={28} color={Colors.secondary} />
+                  </TouchableOpacity>
+                )}/>
             <View style={styles.board}>
                 {selectedLocation!==null?
                     !isLoading ?
-
-                        alertList?.length > 0 ?
+                        alertList &&
+                        <>
                             <FlatList
                             data={alertList}
                             renderItem={renderAlerts}
                             keyExtractor={item => item.campaignId}
+                            ListEmptyComponent={
+                                <View style={{flex:1,height:500,justifyContent:'center',alignItems:'center'}}>
+                                    <Text style={{fontSize:18,color:'grey'}}>No campaigns right now!</Text>
+                                </View>
+                            }
                             contentContainerStyle={{paddingBottom:80}}
                         />
-                        :
-                        <View style={{flex:1,justifyContent:'center',alignItems:'center'}}>
-                            <Text style={{fontSize:18,color:'grey'}}>No campaigns right now!</Text>
-                        </View>
+                        <BottomSheet ref={bottomSheetRef} height={Dimensions.get('screen').height*0.6} heading='Filter' >
+                            <View style={{justifyContent:'flex-start',alignItems:'flex-start',padding:10}}>
+                            <Text style={styles.heading}>Select Radius</Text>
+                            <View style={{width:'100%',flexDirection:'row',justifyContent:'flex-start',alignItems:'center',marginTop:10,flexWrap:'wrap',marginBottom:30}}>
+                                {
+                                radiusList.map((item)=>(
+                                    <TouchableOpacity onPress={()=>selectFilter(item.value)} key={item.id} style={{padding:5,borderRadius:20,borderColor:Colors.primary,borderWidth:1,paddingHorizontal:20,backgroundColor:radius==item.value?Colors.primary:'white',margin:8,marginLeft:0}}>
+                                    <Text style={{color:radius==item.value?'white':'black'}}>{item.value} KM</Text>
+                                    </TouchableOpacity>
+                                ))
+                                }
+                            </View>
+                            <Text style={styles.heading}>Select Tags</Text>
+                            <View style={{width:'100%',flexDirection:'row',justifyContent:'flex-start',alignItems:'center',marginTop:10,flexWrap:'wrap',marginBottom:30}}>
+                                {
+                                taglist.map((item)=>(
+                                    <TouchableOpacity onPress={()=>selectTag(item.value)} key={item.id} style={{padding:5,borderRadius:20,borderColor:Colors.primary,borderWidth:1,paddingHorizontal:20,backgroundColor:tags.includes(item.value)?Colors.primary:'white',margin:5}}>
+                                    <Text style={{color:tags.includes(item.value)?'white':'black'}}>{item.text}</Text>
+                                    </TouchableOpacity>
+                                ))
+                                }
+                            </View>
+
+                            <TouchableOpacity onPress={applyFilter} style={{width:'100%',paddingVertical:12,paddingHorizontal:15,borderRadius:8,marginVertical:10,justifyContent:'center',alignItems:'center',backgroundColor:Colors.primary,marginBottom:30}} >
+                                <Text style={{color: Colors.white, fontSize: 16, fontWeight: 'bold', marginLeft: 5}}>Submit</Text>
+                            </TouchableOpacity>
+
+                            </View>
+
+                        </BottomSheet>
+                        </>
+
                     :
                     <View style={{flex:1,justifyContent:'center',alignItems:'center'}}>
                         <ActivityIndicator size='large' color={Colors.primary} />

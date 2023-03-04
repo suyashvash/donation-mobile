@@ -38,7 +38,7 @@ export default function NgoDetailsScreen({navigation,route}) {
                 <Text style={styles.heading}>Name</Text>
                 <Text style={styles.details}>{ngoDetails.name}</Text>
 
-                <Text style={styles.heading}>Description</Text>
+                <Text style={styles.heading}>Address</Text>
                 <Text style={styles.details}>{ngoDetails.address}</Text>
 
                 <Text style={styles.heading}>Distance</Text>

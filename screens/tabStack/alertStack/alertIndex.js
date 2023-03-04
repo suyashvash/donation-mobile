@@ -3,6 +3,7 @@ import { Routes } from '../../../utils/routes';
 import AlertBoardScreen from './alertBoardScreen';
 import CampaginDetailScreen from './alertDetails';
 import DonateScreen from './donateScreen';
+import SlotScreen from './slotScreen';
 import VolunteerScreen from './volunteersScreen';
 
 
@@ -19,6 +20,9 @@ export default function AlertBoardNavigator() {
         headerShown: true, 
       }} />
       <AlertStack.Screen name={Routes.tabStack.alertStack.volunteerScreen} component={VolunteerScreen} options={{
+        headerShown: true, 
+      }} />
+       <AlertStack.Screen name={Routes.tabStack.alertStack.slotScreen} component={SlotScreen} options={{
         headerShown: true, 
       }} />
     </AlertStack.Navigator>

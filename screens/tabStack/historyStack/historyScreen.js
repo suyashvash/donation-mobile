@@ -92,7 +92,7 @@ export default function HistoryScreen({navigation,route}) {
                             <FlatList
                             data={donations}
                             renderItem={renderDonations}
-                            keyExtractor={item => item.campaignId}
+                            keyExtractor={item => item.donationId}
                             contentContainerStyle={{paddingBottom:80}}
                         />
                         :

@@ -72,6 +72,12 @@ export default function DonateScreen({navigation,route}) {
 
 
     const volunteer = async() => {
+
+        if(enteredAmount<=0){
+            Alert.alert('Error','Please enter a valid amount')
+            return
+        }
+
         setModalVisible(true)
  
         const docSnap = await getDoc(userRef);
@@ -86,6 +92,7 @@ export default function DonateScreen({navigation,route}) {
                 amount : enteredAmount,
                 delivered : false,
                 deliveredOn : null,
+                donationId:`${campaginDetails.campaignId}_${new Date().getTime()}_${user.uid}`,
                 createdAt: new Date().getTime()
             }
 
@@ -97,10 +104,12 @@ export default function DonateScreen({navigation,route}) {
                 totalAmount:campaginDetails.totalAmount,
                 delivered:volunteerUser.delivered,
                 deliveredOn: volunteerUser.deliveredOn,
-                createdAt:volunteerUser.createdAt
+                createdAt:volunteerUser.createdAt,
+                donationId:volunteerUser.donationId
             }
 
             userDonations.push(userDonObj)
+
   
             const reference = ref(db,'campaign/'+ `${campaginDetails.campaignId}/volunteers`);
             get(reference).then(async(snapshot) => {
@@ -115,7 +124,6 @@ export default function DonateScreen({navigation,route}) {
                         setModalVisible(false)
                       })
                       .catch((err)=>{
-                        console.log(err)
                         setModalVisible(false)
                       })
                     
@@ -126,9 +134,9 @@ export default function DonateScreen({navigation,route}) {
                     }).then(()=>{
                         Alert.alert('Success','Donation Successful')
                         setModalVisible(false)
+                        navigation.goBack()
                       })
                       .catch((err)=>{
-                        console.log(err)
                         setModalVisible(false)
                       })
                 }
@@ -146,7 +154,7 @@ export default function DonateScreen({navigation,route}) {
     }
 
     const bookService =()=>{
-        Alert.alert('Booking Service','In Development !')
+       navigation.navigate(Routes.tabStack.alertStack.slotScreen,{data:campaginDetails})
     }
 
 

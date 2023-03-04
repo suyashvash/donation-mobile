@@ -36,7 +36,6 @@ export default function RegisterScreen({navigation}) {
         }
         setDoc(userRef, mobileUser).then(() => {
             setModalVisible(false)
-            console.log("Document written with ID: ", user.uid);
             navigation.navigate(Routes.onBoardingStack.login)
         })
         .catch((error) => {

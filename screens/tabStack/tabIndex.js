@@ -52,7 +52,7 @@ export default function TabStack() {
       />
       <MainTabStack.Screen name={Routes.tabStack.historyStack.tag} component={HistoryNavigator}
         options={({ navigation, route }) => ({
-          ...tabProperties, headerTitle: 'History',
+          ...tabProperties, headerTitle: 'History',unmountOnBlur: true,
           tabBarIcon: ({ color }) => 
           <MaterialCommunity name={'history'} size={30} color={color} />
 

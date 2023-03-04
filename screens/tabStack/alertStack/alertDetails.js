@@ -96,7 +96,7 @@ export default function CampaginDetailScreen({navigation,route}) {
 
             <View style={{width:width,padding:15,justifyContent:'center',alignItems:'flex-start'}}>
                 <Text style={styles.heading}>Status</Text>
-                <Text style={styles.details}>{percentage}% Done | {volunteers.length} People Donated</Text>
+                <Text style={styles.details}>{Math.round((percentage + Number.EPSILON) * 100) / 100}% Done | {volunteers.length} People Donated</Text>
                 <View style={{width:'100%',marginVertical:10}}>
                     <View style={{width:'90%', height:5,borderRadius:10,backgroundColor:'whitesmoke'}}/>
                     <View style={{width:`${percentage}%`, height:5,borderRadius:10,backgroundColor:Colors.primary,position:'absolute',top:0,left:0}}/>

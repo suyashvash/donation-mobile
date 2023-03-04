@@ -1,5 +1,5 @@
 import React,{useState,useEffect} from "react"
-import { View, Text ,StyleSheet,Image,FlatList, Dimensions, TextInput, ActivityIndicator} from "react-native"
+import { View, Text ,StyleSheet,Image,FlatList, Dimensions, TextInput, ActivityIndicator, TouchableOpacity} from "react-native"
 import Header from "../../../components/header"
 import { envConfig } from "../../../src/config/envConfig"
 import { Colors } from "../../../utils/colors"
@@ -10,6 +10,7 @@ import { getFirestore ,collection, query, where, getDocs,startAt,endAt} from "fi
 import * as Location from 'expo-location';
 import { setSelectedLocation } from "../../../src/features/userSlice"
 import { useDispatch } from "react-redux"
+import { BottomSheet } from "../../../components/bottomSheet"
 
 export default function HomeScreen() {
 
@@ -20,11 +21,34 @@ export default function HomeScreen() {
   const db = getFirestore();
   const dispatch = useDispatch()
 
+  const bottomSheetRef = React.useRef(null);
+
+  const radiusList =[
+    {id:1,value:10},
+    {id:2,value:20},
+    {id:3,value:30},
+    {id:4,value:40},
+    {id:5,value:50},
+    {id:6,value:60},
+  ]
+
+  const taglist =[
+    {id:1,value:"disaster",text:"Disaster"},
+    {id:2,value:"education",text:"Education"},
+    {id:3,value:"health",text:"Health"},
+    {id:4,value:'children',text:'Children'},
+    {id:5,value:'women',text:'Women'},
+    {id:6,value:'animals',text:'Animals'},
+  ]
+
+  const [tags,setTags] = useState([])
+
   const width = Dimensions.get('window').width;
   const [ngoList,setNgoList] = useState(null)
   const [loading,setLoading] = useState(false)
   const [coordinates,setCoordinates] = useState(null)
   const [search,setSearch] = useState(null)
+  const [radius,setRadius] = useState(10)
 
   const getNGOList = async(myCords,name) => {
     setLoading(true)
@@ -37,12 +61,29 @@ export default function HomeScreen() {
     }
     const querySnapshot = await getDocs(ref)
     querySnapshot.forEach((doc) => {
-      console.warn(doc.data())
+  
       let distance = getDistanceFromLatLonInKm(myCords.latitude,myCords.longitude,doc.data().lat,doc.data().long)
-      if(distance <= 15){
-        let tempData = doc.data()
-        tempData.distance = Math.round(distance)
-        temp.push(tempData)
+      if(distance <= radius ){
+        if(tags.length > 0){
+          console.warn(tags)
+          let tag = doc.data().tag
+          let flag = false
+          for(let i=0;i<tags.length;i++){
+            if(tag.includes(tags[i])){
+              flag = true
+            }
+          }
+          if(flag){
+            let tempData = doc.data()
+            tempData.distance = Math.round(distance)
+            temp.push(tempData)
+          }
+        }else{
+          let tempData = doc.data()
+          tempData.distance = Math.round(distance)
+          temp.push(tempData)
+        }
+
       }
       // else{
       //   console.warn(distance)
@@ -90,7 +131,7 @@ export default function HomeScreen() {
 
       dispatch(setSelectedLocation({selectedLocation:locationObject}))
       setCoordinates(locationObject)
-      getNGOList(locationObject)
+      getNGOList(locationObject,undefined)
     })();
   }
 
@@ -117,17 +158,51 @@ export default function HomeScreen() {
   }
 
 
+  const openFilter = () => {
+    bottomSheetRef.current.open()
+  }
+
+  const selectFilter = (value) => {
+    setRadius(value)
+    // bottomSheetRef.current.close()
+    // getNGOList(coordinates,undefined,value)
+  }
+
+  const selectTag = (value) => {
+    let valueNew = value.toLowerCase()
+    let tempGen = [...tags];
+    if( tempGen.indexOf(valueNew) === -1){
+        tempGen.push(valueNew)
+        setTags(tempGen)
+    }else{
+        tempGen.splice(tempGen.indexOf(valueNew),1)
+        setTags(tempGen)
+    }
+
+  }
+
+  const applyFilter = () => {
+    bottomSheetRef.current.close()
+    getNGOList(coordinates,undefined)
+  }
 
   return (
     !loading ?
-     ngoList?.length > 0 ?
+     ngoList?
       <View style={styles.container}>
       
         <FlatList
           data={ngoList}
           ListHeaderComponent={
             <>
-              <Header title='Suyash' subTitle='Hello,'/>
+              <Header title='Suyash' subTitle='Hello,'
+                headerRight={(
+                  <TouchableOpacity onPress={openFilter}>
+                    <MaterialIcons name="filter-list" size={28} color={Colors.secondary} />
+                  </TouchableOpacity>
+                )}
+              
+              />
               <View style={{width:Dimensions.get('screen').width,padding:10,justifyContent:'center',alignItems:'center'}}>
                 <View style={[{width:'95%',padding:10,backgroundColor:'white',flexDirection:'row',borderRadius:8},envConfig.shadow]}>
                     <MaterialIcons name="search" size={24} color="grey" />
@@ -142,14 +217,56 @@ export default function HomeScreen() {
           showsVerticalScrollIndicator={false}
           keyExtractor={(item) => item.uid}
           renderItem={renderNGO}
+          ListEmptyComponent={
+            <View style={{height:500, justifyContent:'center',alignItems:'center'}}>
+              <Text style={{fontSize:18,width:width,textAlign:'center'}}>No NGO Found</Text>
+            </View>
+          }
           horizontal={false} numColumns={2}
           contentContainerStyle={ngoList?.length==1 ? { width: width,alignItems:'flex-start'} : { width: width,alignItems:'flex-start' }}
           />
+
+          <BottomSheet ref={bottomSheetRef} height={Dimensions.get('screen').height*0.6} heading='Filter' >
+            <View style={{justifyContent:'flex-start',alignItems:'flex-start',padding:10}}>
+              <Text style={styles.heading}>Select Radius</Text>
+              <View style={{width:'100%',flexDirection:'row',justifyContent:'flex-start',alignItems:'center',marginTop:10,flexWrap:'wrap',marginBottom:30}}>
+                {
+                  radiusList.map((item)=>(
+                    <TouchableOpacity onPress={()=>selectFilter(item.value)} key={item.id} style={{padding:5,borderRadius:20,borderColor:Colors.primary,borderWidth:1,paddingHorizontal:20,backgroundColor:radius==item.value?Colors.primary:'white',margin:8,marginLeft:0}}>
+                      <Text style={{color:radius==item.value?'white':'black'}}>{item.value} KM</Text>
+                    </TouchableOpacity>
+                  ))
+                }
+              </View>
+              <Text style={styles.heading}>Select Tags</Text>
+              <View style={{width:'100%',flexDirection:'row',justifyContent:'flex-start',alignItems:'center',marginTop:10,flexWrap:'wrap',marginBottom:30}}>
+                {
+                  taglist.map((item)=>(
+                    <TouchableOpacity onPress={()=>selectTag(item.value)} key={item.id} style={{padding:5,borderRadius:20,borderColor:Colors.primary,borderWidth:1,paddingHorizontal:20,backgroundColor:tags.includes(item.value)?Colors.primary:'white',margin:5}}>
+                      <Text style={{color:tags.includes(item.value)?'white':'black'}}>{item.text}</Text>
+                    </TouchableOpacity>
+                  ))
+                }
+              </View>
+
+              <TouchableOpacity onPress={applyFilter} style={{width:'100%',paddingVertical:12,paddingHorizontal:15,borderRadius:8,marginVertical:10,justifyContent:'center',alignItems:'center',backgroundColor:Colors.primary,marginBottom:30}} >
+                  <Text style={{color: Colors.white, fontSize: 16, fontWeight: 'bold', marginLeft: 5}}>Submit</Text>
+              </TouchableOpacity>
+
+            </View>
+
+          </BottomSheet>
     
       </View>
       :
       <View style={{flex:1,justifyContent:'flex-start',alignItems:'center',backgroundColor:'white'}}>
-            <Header title='Suyash' subTitle='Hello,'/>
+            <Header title='Suyash' subTitle='Hello,'
+             headerRight={(
+              <TouchableOpacity onPress={openFilter}>
+                <MaterialIcons name="filter-list" size={28} color={Colors.secondary} />
+              </TouchableOpacity>
+            )}
+            />
             <View style={{width:Dimensions.get('screen').width,padding:10,justifyContent:'center',alignItems:'center'}}>
               <View style={[{width:'95%',padding:10,backgroundColor:'whitesmoke',flexDirection:'row',borderRadius:8},envConfig.shadow]}>
                   <MaterialIcons name="search" size={24} color="grey" />
@@ -159,8 +276,10 @@ export default function HomeScreen() {
               <Text style={{fontSize:18,fontWeight:'bold'}}>NGO Near You !</Text>
             </View>
             <View style={{flex:1,justifyContent:'center',alignItems:'center'}}>
-                <Text style={{fontSize:18,width:width*0.8,textAlign:'center'}}>No NGO Found Under 10KM Radius with name {search}</Text>
+                <Text style={{fontSize:18,width:width*0.8,textAlign:'center'}}>Can't connect to network !</Text>
             </View>
+
+            
      
     </View>
 
@@ -190,6 +309,12 @@ const styles = StyleSheet.create({
         backgroundColor: 'white',
         alignItems: 'center',
         justifyContent: 'flex-start',
-    }
+    },
+    heading: {
+      fontWeight: 'bold',
+      fontSize: 16,
+      marginBottom: 2,
+      color: Colors.secondary
+  },
 
 })
