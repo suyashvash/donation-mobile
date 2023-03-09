@@ -1,7 +1,7 @@
 import React,{useState} from "react";
 import { StyleSheet, Text, View,Image,TouchableOpacity,TextInput,KeyboardAvoidingView,ScrollView,Alert, Dimensions } from "react-native";
 import { Colors } from "../../utils/colors";
-import logoBlack from '../../assets/logo/doNationBlack.png'
+import logoBlack from '../../assets/logo/doNationWhite.png'
 import { Routes } from "../../utils/routes";
 import { getAuth, createUserWithEmailAndPassword ,sendEmailVerification } from "firebase/auth";
 import { LoadingModal } from "react-native-loading-modal";
@@ -98,7 +98,7 @@ export default function RegisterScreen({navigation}) {
                 <ScrollView contentContainerStyle={styles.container}>
                     <View style={{width:'100%',position:'absolute',top:'15%',justifyContent:'center',alignItems:'center'}}>
                         <Image source={logoBlack} style={{width: 50, height: 50}}/>
-                        <Text style={{color: Colors.black, fontSize: 16,marginTop:20}}>Register With</Text>
+                        <Text style={{color: 'white', fontSize: 16,marginTop:20}}>Register With</Text>
                         <Text style={{color: 'white', fontSize: 35, fontWeight: 'bold'}}>DoNation</Text>
                     </View>
                    

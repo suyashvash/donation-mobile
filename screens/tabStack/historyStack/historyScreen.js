@@ -34,8 +34,8 @@ export default function HistoryScreen({navigation,route}) {
         if (docSnap.exists()) {
             let user = docSnap.data()
             const donations = JSON.parse(user.donations)
-            console.log(donations)
-            setDonations(donations)
+            const ordered=  donations.sort((a, b) => parseFloat(b.distance) < parseFloat(a.distance));
+            setDonations(ordered)
             setIsLoading(false)
         }
       }
@@ -125,7 +125,7 @@ const styles = StyleSheet.create({
         borderTopRightRadius:40,
         // borderColor:'lightgrey',
         // borderWidth:1,
-        shadowColor: 'black',
+        shadowColor:Platform.OS=='ios'?'grey': 'black' ,
         shadowOpacity: 1,
         elevation: 10,
     },

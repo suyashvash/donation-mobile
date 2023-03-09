@@ -1,5 +1,5 @@
 import React,{useState,useEffect} from "react"
-import { View, Text ,StyleSheet,Image,FlatList, Dimensions, TextInput, ActivityIndicator, TouchableOpacity} from "react-native"
+import { View, Text ,StyleSheet,Image,FlatList, Dimensions, TextInput, ActivityIndicator, TouchableOpacity, Alert} from "react-native"
 import Header from "../../../components/header"
 import { envConfig } from "../../../src/config/envConfig"
 import { Colors } from "../../../utils/colors"
@@ -51,6 +51,10 @@ export default function HomeScreen() {
   const [radius,setRadius] = useState(10)
 
   const getNGOList = async(myCords,name) => {
+    if(myCords == null){
+      Alert.alert('Location',"Please enable location")
+      return;
+    }
     setLoading(true)
     let temp = []
     let ref;
@@ -188,7 +192,7 @@ export default function HomeScreen() {
 
   return (
     !loading ?
-     ngoList?
+     ngoList!==null?
       <View style={styles.container}>
       
         <FlatList
@@ -210,7 +214,7 @@ export default function HomeScreen() {
                 </View>
               </View>
               <View style={{width:Dimensions.get('screen').width,padding:10,paddingHorizontal:20,justifyContent:'center',alignItems:'flex-start'}}>
-                <Text style={{fontSize:18,fontWeight:'bold'}}>NGO Near You</Text>
+                <Text style={{fontSize:18,fontWeight:'bold'}}>NGO In {radius} KM</Text>
               </View>
             </>
           }
@@ -260,13 +264,7 @@ export default function HomeScreen() {
       </View>
       :
       <View style={{flex:1,justifyContent:'flex-start',alignItems:'center',backgroundColor:'white'}}>
-            <Header title='Suyash' subTitle='Hello,'
-             headerRight={(
-              <TouchableOpacity onPress={openFilter}>
-                <MaterialIcons name="filter-list" size={28} color={Colors.secondary} />
-              </TouchableOpacity>
-            )}
-            />
+            <Header title='Suyash' subTitle='Hello,'/>
             <View style={{width:Dimensions.get('screen').width,padding:10,justifyContent:'center',alignItems:'center'}}>
               <View style={[{width:'95%',padding:10,backgroundColor:'whitesmoke',flexDirection:'row',borderRadius:8},envConfig.shadow]}>
                   <MaterialIcons name="search" size={24} color="grey" />

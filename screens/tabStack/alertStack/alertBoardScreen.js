@@ -262,7 +262,7 @@ const styles = StyleSheet.create({
         borderTopRightRadius:40,
         // borderColor:'lightgrey',
         // borderWidth:1,
-        shadowColor: 'black',
+        shadowColor:Platform.OS=='ios'?'grey': 'black',
         shadowOpacity: 1,
         elevation: 10,
     },
